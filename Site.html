@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DigitalBox - Marketplace</title>
+<style>
+  /* Reset básico */
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background: #f4f4f8;
+    color: #333;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    background-color: #5a2a83;
+    color: white;
+    padding: 1rem;
+  }
+  header h1 {
+    margin: 0;
+    font-weight: 900;
+  }
+  nav {
+    margin-top: 0.5rem;
+  }
+  nav button {
+    background-color: #7f47c7;
+    border: none;
+    color: white;
+    margin-right: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: background-color 0.3s ease;
+  }
+  nav button:hover {
+    background-color: #4a1f61;
+  }
+  main {
+    flex-grow: 1;
+    padding: 1rem;
+    max-width: 900px;
+    margin: auto;
+    width: 100%;
+  }
+  section {
+    display: none;
+  }
+  section.active {
+    display: block;
+  }
+  form {
+    max-width: 450px;
+    margin-top: 1rem;
+  }
+  label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+  }
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  select {
+    width: 100%;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+  button.submit-btn {
+    background-color: #5a2a83;
+    color: white;
+    padding: 0.75rem 1.2rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1.1rem;
+  }
+  button.submit-btn:hover {
+    background-color: #3e1d56;
+  }
+  .msg {
+    margin-bottom: 1rem;
+    font-weight: 700;
+  }
+  .msg.error {
+    color: #d9534f;
+  }
+  .msg.success {
+    color: #5cb85c;
+  }
+  /* Produtos */
+  #productListSection .filters {
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  #productListSection .filters select,
+  #productListSection .filters input[type="text"] {
+    flex-grow: 1;
+    max-width: 200px;
+  }
+  .product-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgb(0 0 0 / 0.1);
+    margin-bottom: 1rem;
+    padding: 1rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    transition: transform 0.3s ease;
+  }
+  .product-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.15);
+  }
+  .product-card img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+  .product-info {
+    flex-grow: 1;
+  }
+  .product-info h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 900;
+  }
+  .product-info p {
+    margin: 0.25rem 0;
+  }
+  .plan-badge {
+    padding: 0.2rem 0.5rem;
+    font-weight: 700;
+    border-radius: 6px;
+    color: white;
+    font-size: 0.8rem;
+    display: inline-block;
+  }
+  .plan-normal {
+    background-color: #6c757d;
+  }
+  .plan-platina {
+    background-color: #b08aff;
+  }
+  .plan-diamante {
+    background-color: #ff9c00;
+  }
+  button.buy-btn {
+    background-color: #5a2a83;
+    color: white;
+    border: none;
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: background-color 0.3s ease;
+  }
+  button.buy-btn:hover {
+    background-color: #3e1d56;
+  }
+  /* Modal pagamento */
+  #paymentModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgb(0 0 0 / 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+  }
+  #paymentModal .modal-content {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    width: 320px;
+    max-width: 90%;
+    text-align: center;
+  }
+  #paymentModal button {
+    margin: 0.5rem 0.25rem;
+  }
+  /* Chat */
+  #chatSection {
+    max-width: 600px;
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  #chatWindow {
+    border: 1px solid #ccc;
+    height: 350px;
+    overflow-y: auto;
+    padding: 10px;
+    background: #fafafa;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    display: flex;
+    flex-direction: column;
+  }
+  #chatWindow div {
+    max-width: 70%;
+    margin-bottom: 10px;
+    padding: 6px 10px;
+    border-radius: 10px;
+    word-wrap: break-word;
+  }
+  #chatWindow .msg-vendedor {
+    background-color: #e1d7f7;
+    color: #4b2997;
+    align-self: flex-start;
+  }
+  #chatWindow .msg-cliente {
+    background-color: #ffdede;
+    color: #a32a2a;
+    align-self: flex-end;
+  }
+  #chatForm {
+    display: flex;
+    gap: 0.5rem;
+  }
+  #chatForm input[type="text"] {
+    flex-grow: 1;
+    padding: 0.5rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 1rem;
+  }
+  #chatForm button {
+    background-color: #5a2a83;
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+  /* PIX Notification */
+  #pixNotification {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background-color: #ffecb3;
+    color: #5a2a83;
+    padding: 1rem;
+    text-align: center;
+    font-weight: 700;
+    z-index: 1100;
+  }
+  #pixNotification button {
+    background: #5a2a83;
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 0.5rem;
+  }
+  /* Responsivo */
+  @media (max-width: 600px) {
+    nav button {
+      margin-bottom: 0.5rem;
+      width: 100%;
+    }
+    .product-card {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .product-card img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px 8px 0 0;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>DigitalBox</h1>
+  <nav>
+    <button id="navLogin">Login / Cadastro</button>
+    <button id="navCreateProduct">Criar Produto</button>
+    <button id="navProductList">Produtos</button>
+    <button id="navChat">Chat</button>
+    <button id="logoutBtn" style="display:none; background:#a32a2a;">Sair</button>
+  </nav>
+</header>
+
+<main>
+  <!-- Login / Cadastro -->
+  <section id="loginSection" class="active">
+    <h2>Login / Cadastro</h2>
+    <form id="loginForm">
+      <label for="emailInput">Email:</label>
+      <input type="email" id="emailInput" required placeholder="exemplo@dominio.com" />
+      
+      <label for="passwordInput">Senha:</label>
+      <input type="password" id="passwordInput" required placeholder="Sua senha" />
+      
+      <label>Tipo de usuário:</label>
+      <select id="userTypeSelect" required>
+        <option value="">Selecione</option>
+        <option value="vendedor">Vendedor</option>
+        <option value="comprador">Comprador</option>
+      </select>
+      
+      <button type="submit" class="submit-btn">Entrar / Cadastrar</button>
+      <p id="loginMsg" class="msg"></p>
+    </form>
+  </section>
+
+  <!-- Criar Produto -->
+  <section id="createProductSection">
+    <h2>Criar Produto</h2>
+    <form id="productForm">
+      <label for="productName">Nome do Produto:</label>
+      <input type="text" id="productName" required placeholder="Nome do produto" />
+      
+      <label for="productPrice">Preço (R$):</label>
+      <input type="number" id="productPrice" min="0" step="0.01" required placeholder="Preço em reais" />
+      
+      <label for="productImage">URL da Imagem:</label>
+      <input type="text" id="productImage" required placeholder="https://exemplo.com/imagem.jpg" />
+      
+      <label for="productPlan">Plano do Produto:</label>
+      <select id="productPlan" required>
+        <option value="">Selecione</option>
+        <option value="normal">Normal (5% taxa)</option>
+        <option value="platina">Platina (7% taxa)</option>
+        <option value="diamante">Diamante (10% taxa)</option>
+      </select>
+      
+      <button type="submit" class="submit-btn">Cadastrar Produto</button>
+      <p id="productMsg" class="msg"></p>
+    </form>
+  </section>
+
+  <!-- Listagem de Produtos -->
+  <section id="productListSection">
+    <h2>Produtos Disponíveis</h2>
+    <div class="filters">
+      <select id="filterPlan">
+        <option value="">Todos os planos</option>
+        <option value="diamante">Diamante</option>
+        <option value="platina">Platina</option>
+        <option value="normal">Normal</option>
+      </select>
+      <input type="text" id="filterName" placeholder="Buscar por nome" />
+    </div>
+    <div id="productsContainer"></div>
+  </section>
+
+  <!-- Chat -->
+  <section id="chatSection">
+    <h2>Chat DigitalBox</h2>
+    <div id="chatWindow"></div>
+    <form id="chatForm">
+      <input type="text" id="chatInput" placeholder="Digite sua mensagem..." required />
+      <button type="submit">Enviar</button>
+    </form>
+  </section>
+
+</main>
+
+<!-- Modal Pagamento -->
+<div id="paymentModal">
+  <div class="modal-content">
+    <h3>Pagamento do Produto</h3>
+    <p id="paymentInfo"></p>
+    <button id="payPixBtn" class="submit-btn">Pagar via PIX (com taxa)</button>
+    <button id="payRobuxBtn" class="submit-btn">Pagar via Robux (sem taxa)</button>
+    <button id="closeModalBtn" class="submit-btn" style="background:#a32a2a; margin-top:1rem;">Cancelar</button>
+    <p id="paymentResult" style="margin-top:1rem; font-weight:700;"></p>
+  </div>
+</div>
+
+<script>
+(() => {
+  // Constantes e elementos
+  const pixCode = '408.839.948-01';
+
+  const navButtons = {
+    login: document.getElementById('navLogin'),
+    createProduct: document.getElementById('navCreateProduct'),
+    productList: document.getElementById('navProductList'),
+    chat: document.getElementById('navChat'),
+    logout: document.getElementById('logoutBtn')
+  };
+
+  const sections = {
+    login: document.getElementById('loginSection'),
+    createProduct: document.getElementById('createProductSection'),
+    productList: document.getElementById('productListSection'),
+    chat: document.getElementById('chatSection')
+  };
+
+  const loginForm = document.getElementById('loginForm');
+  const loginMsg = document.getElementById('loginMsg');
+  const emailInput = document.getElementById('emailInput');
+  const passwordInput = document.getElementById('passwordInput');
+  const userTypeSelect = document.getElementById('userTypeSelect');
+
+  const productForm = document.getElementById('productForm');
+  const productMsg = document.getElementById('productMsg');
+
+  const filterPlan = document.getElementById('filterPlan');
+  const filterName = document.getElementById('filterName');
+  const productsContainer = document.getElementById('productsContainer');
+
+  const paymentModal = document.getElementById('paymentModal');
+  const paymentInfo = document.getElementById('paymentInfo');
+  const payPixBtn = document.getElementById('payPixBtn');
+  const payRobuxBtn = document.getElementById('payRobuxBtn');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  const paymentResult = document.getElementById('paymentResult');
+
+  const chatSection = document.getElementById('chatSection');
+  const chatWindow = document.getElementById('chatWindow');
+  const chatForm = document.getElementById('chatForm');
+  const chatInput = document.getElementById('chatInput');
+
+  // Estado global
+  let currentUser = null; // { email, type }
+  let products = [];
+  let productToBuy = null;
+  let chatMessages = [];
+  let pixPending = false;
+  let pixConfirmTimeout = null;
+
+  // Funções auxiliares
+  function showSection(name) {
+    Object.values(sections).forEach(sec => sec.classList.remove('active'));
+    chatSection.classList.remove('active');
+    if (name === 'chat') {
+      chatSection.classList.add('active');
+    } else if (sections[name]) {
+      sections[name].classList.add('active');
+    }
+  }
+
+  function saveProducts() {
+    localStorage.setItem('digitalbox_products', JSON.stringify(products));
+  }
+  function loadProducts() {
+    const saved = localStorage.getItem('digitalbox_products');
+    if (saved) {
+      try {
+        products = JSON.parse(saved);
+      } catch {
+        products = [];
+      }
+    }
+  }
+
+  function saveUsers() {
+    localStorage.setItem('digitalbox_users', JSON.stringify(users));
+  }
+  function loadUsers() {
+    const saved = localStorage.getItem('digitalbox_users');
+    if (saved) {
+      try {
+        users = JSON.parse(saved);
+      } catch {
+        users = [];
+      }
+    }
+  }
+
+  // Usuários salvos (email, senha, tipo)
+  let users = [];
+  loadUsers();
+
+  // Carregar produtos
+  loadProducts();
+
+  // Renderiza produtos na tela, com filtros e ordenação
+  function renderProducts() {
+    let filtered = [...products];
+    const planFilter = filterPlan.value;
+    const nameFilter = filterName.value.trim().toLowerCase();
+
+    if (planFilter) {
+      filtered = filtered.filter(p => p.plan === planFilter);
+    }
+    if (nameFilter) {
+      filtered = filtered.filter(p => p.name.toLowerCase().includes(nameFilter));
+    }
+
+    // Ordena: Diamante > Platina > Normal, depois por nome
+    const order = { diamante: 1, platina: 2, normal: 3 };
+    filtered.sort((a,b) => {
+      if(order[a.plan] !== order[b.plan]) return order[a.plan] - order[b.plan];
+      return a.name.localeCompare(b.name);
+    });
+
+    productsContainer.innerHTML = '';
+    if(filtered.length === 0) {
+      productsContainer.innerHTML = '<p>Nenhum produto encontrado.</p>';
+      return;
+    }
+
+    filtered.forEach(prod => {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+
+      const img = document.createElement('img');
+      img.src = prod.image;
+      img.alt = prod.name;
+
+      const info = document.createElement('div');
+      info.className= 'product-info';
+
+      const title = document.createElement('h3');
+      title.textContent = prod.name;
+
+      const price = document.createElement('p');
+      price.textContent = `R$ ${prod.price.toFixed(2)}`;
+
+      const planBadge = document.createElement('span');
+      planBadge.className = 'plan-badge plan-' + prod.plan;
+      planBadge.textContent = prod.plan.charAt(0).toUpperCase() + prod.plan.slice(1);
+
+      const buyBtn = document.createElement('button');
+      buyBtn.className = 'buy-btn';
+      buyBtn.textContent = 'Comprar';
+      buyBtn.addEventListener('click', () => {
+        if (!currentUser) {
+          alert('Você precisa estar logado para comprar.');
+          showSection('login');
+          return;
+        }
+        if (currentUser.type !== 'comprador') {
+          alert('Apenas compradores podem comprar produtos.');
+          return;
+        }
+        productToBuy = prod;
+        openPaymentModal(prod);
+      });
+
+      info.appendChild(title);
+      info.appendChild(price);
+      info.appendChild(planBadge);
+      card.appendChild(img);
+      card.appendChild(info);
+      card.appendChild(buyBtn);
+
+      productsContainer.appendChild(card);
+    });
+  }
+
+  function openPaymentModal(prod) {
+    paymentInfo.textContent = `Produto: ${prod.name}\nPreço: R$ ${prod.price.toFixed(2)}`;
+    paymentResult.textContent = '';
+    paymentModal.style.display = 'flex';
+  }
+
+  function closePaymentModal() {
+    paymentModal.style.display = 'none';
+    paymentResult.textContent = '';
+    productToBuy = null;
+  }
+
+  function logoutSellerDueNoPixConfirmation() {
+    if (currentUser && currentUser.type === 'vendedor') {
+      currentUser = null;
+      alert('Você foi desconectado do site por não confirmar o pagamento da taxa PIX.');
+      navButtons.logout.style.display = 'none';
+      showSection('login');
+    }
+  }
+
+  // Avisar vendedor da taxa PIX a pagar e exigir confirmação
+  function showPixNotificationForSeller(taxaValor) {
+    if (!currentUser || currentUser.type !== 'vendedor') return;
+
+    let existingNotice = document.getElementById('pixNotification');
+    if (existingNotice) existingNotice.remove();
+
+    const notice = document.createElement('div');
+    notice.id = 'pixNotification';
+    notice.innerHTML = `
+      <p>Venda realizada! Você deve pagar a taxa de <strong>R$ ${taxaValor.toFixed(2)}</strong> via PIX para o código:</p>
+      <p style="font-size:1.2rem; margin: 0.3rem 0;">${pixCode}</p>
+      <button id="confirmPixBtn">Confirmar pagamento da taxa PIX</button>
+    `;
+    document.body.appendChild(notice);
+
+    pixPending = true;
+
+    document.getElementById('confirmPixBtn').addEventListener('click', () => {
+      pixPending = false;
+      clearTimeout(pixConfirmTimeout);
+      alert('Pagamento da taxa PIX confirmado. Obrigado!');
+      notice.remove();
+    });
+
+    pixConfirmTimeout = setTimeout(() => {
+      if (pixPending) {
+        alert('Você não confirmou o pagamento da taxa PIX a tempo. Você será desconectado.');
+        logoutSellerDueNoPixConfirmation();
+        notice.remove();
+      }
+    }, 3 * 60 * 1000);
+  }
+
+  // Login / Cadastro
+  loginForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const email = emailInput.value.trim().toLowerCase();
+    const password = passwordInput.value.trim();
+    const type = userTypeSelect.value;
+
+    if (!email || !password || !type) {
+      loginMsg.textContent = 'Preencha todos os campos.';
+      loginMsg.className = 'msg error';
+      return;
+    }
+
+    // Verifica se usuário já existe
+    let user = users.find(u => u.email === email);
+
+    if (user) {
+      // Login: verifica senha e tipo
+      if (user.password !== password || user.type !== type) {
+        loginMsg.textContent = 'Email, senha ou tipo incorretos.';
+        loginMsg.className = 'msg error';
+        return;
+      }
+      currentUser = { email: user.email, type: user.type };
+      loginMsg.textContent = 'Login realizado com sucesso!';
+      loginMsg.className = 'msg success';
+    } else {
+      // Cadastro
+      user = { email, password, type };
+      users.push(user);
+      saveUsers();
+      currentUser = { email, type };
+      loginMsg.textContent = 'Cadastro realizado com sucesso!';
+      loginMsg.className = 'msg success';
+    }
+
+    // Mostrar botao logout e navegar para produtos ou criar produto
+    navButtons.logout.style.display = 'inline-block';
+
+    if (currentUser.type === 'vendedor') {
+      showSection('createProduct');
+    } else {
+      showSection('productList');
+    }
+
+    // Limpar formulário
+    loginForm.reset();
+    setTimeout(() => { loginMsg.textContent = ''; }, 3500);
+  });
+
+  // Logout
+  navButtons.logout.addEventListener('click', () => {
+    currentUser = null;
+    pixPending = false;
+    clearTimeout(pixConfirmTimeout);
+    navButtons.logout.style.display = 'none';
+    alert('Você saiu do site.');
+    showSection('login');
+  });
+
+  // Navegação
+  navButtons.login.addEventListener('click', () => showSection('login'));
+  navButtons.createProduct.addEventListener('click', () => {
+    if (!currentUser || currentUser.type !== 'vendedor') {
+      alert('Você precisa estar logado como vendedor para acessar esta página.');
+      showSection('login');
+      return;
+    }
+    showSection('createProduct');
+  });
+  navButtons.productList.addEventListener('click', () => {
+    showSection('productList');
+    renderProducts();
+  });
+  navButtons.chat.addEventListener('click', () => {
+    if (!currentUser) {
+      alert('Você precisa estar logado para acessar o chat.');
+      showSection('login');
+      return;
+    }
+    showSection('chat');
+    renderChat();
+  });
+
+  // Cadastro Produto
+  productForm.addEventListener('submit', e => {
+    e.preventDefault();
+
+    if (!currentUser || currentUser.type !== 'vendedor') {
+      productMsg.textContent = 'Você precisa estar logado como vendedor para cadastrar produtos.';
+      productMsg.className = 'msg error';
+      showSection('login');
+      return;
+    }
+
+    const name = productForm.productName.value.trim();
+    const price = parseFloat(productForm.productPrice.value);
+    const image = productForm.productImage.value.trim();
+    const plan = productForm.productPlan.value;
+
+    if (!name || isNaN(price) || price < 0 || !image || !plan) {
+      productMsg.textContent = 'Preencha todos os campos corretamente.';
+      productMsg.className = 'msg error';
+      return;
+    }
+
+    products.push({ name, price, image, plan, sellerEmail: currentUser.email });
+    saveProducts();
+
+    productMsg.textContent = `Produto "${name}" cadastrado com sucesso!`;
+    productMsg.className = 'msg success';
+    productForm.reset();
+    renderProducts();
+  });
+
+  // Filtros produtos
+  filterPlan.addEventListener('change', renderProducts);
+  filterName.addEventListener('input', renderProducts);
+
+  // Pagamento modal eventos
+  payPixBtn.addEventListener('click', () => {
+    if (!productToBuy) return;
+    const taxas = { normal: 0.05, platina: 0.07, diamante: 0.10 };
+    const taxa = taxas[productToBuy.plan] || 0;
+    const taxaValor = productToBuy.price * taxa;
+    const valorFinal = productToBuy.price - taxaValor;
+
+    paymentResult.style.color = 'green';
+    paymentResult.textContent = `Pagamento via PIX confirmado!\nPreço: R$ ${productToBuy.price.toFixed(2)}\nTaxa aplicada: ${(taxa * 100).toFixed(0)}%\nValor recebido pelo vendedor: R$ ${valorFinal.toFixed(2)}`;
+
+    showPixNotificationForSeller(taxaValor);
+
+    setTimeout(() => {
+      closePaymentModal();
+      alert(`Compra concluída! Você pagou R$ ${productToBuy.price.toFixed(2)} via PIX.`);
+    }, 3500);
+  });
+
+  payRobuxBtn.addEventListener('click', () => {
+    if (!productToBuy) return;
+    const valorFinal = productToBuy.price;
+
+    paymentResult.style.color = 'green';
+    paymentResult.textContent = `Pagamento via Robux confirmado!\nPreço: R$ ${productToBuy.price.toFixed(2)}\nSem taxa adicional.`;
+
+    setTimeout(() => {
+      closePaymentModal();
+      alert(`Compra concluída! Você pagou R$ ${valorFinal.toFixed(2)} via Robux.`);
+    }, 3500);
+  });
+
+  closeModalBtn.addEventListener('click', closePaymentModal);
+
+  // Chat funções
+  function renderChat() {
+    chatWindow.innerHTML = '';
+    if (chatMessages.length === 0) {
+      chatWindow.innerHTML = '<p style="color:#555;">Nenhuma mensagem ainda. Comece a conversa!</p>';
+      return;
+    }
+    chatMessages.forEach(msg => {
+      const div = document.createElement('div');
+      div.textContent = `${msg.sender === currentUser.type ? 'Você' : (msg.sender === 'vendedor' ? 'Vendedor' : 'Cliente')}: ${msg.text}`;
+      div.className = msg.sender === 'vendedor' ? 'msg-vendedor' : 'msg-cliente';
+      chatWindow.appendChild(div);
+    });
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
+
+  chatForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const text = chatInput.value.trim();
+    if (!text) return;
+    chatMessages.push({ sender: currentUser.type, text });
+    chatInput.value = '';
+    renderChat();
+  });
+
+  // Inicialização
+  showSection('login');
+  renderProducts();
+
+})();
+</script>
+
+</body>
+</html>
